@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кейс: Робота адміністратора клініки — Care Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f9f6f0;--white:#fff;--ink:#18170f;
+  --green:#2c5f3f;--green-light:#3d7a52;--green-pale:#eaf2ec;--green-mid:#c5dbc9;
+  --gold:#9a7f45;--gold-pale:#f5eedb;
+  --muted:#6b6655;--border:#ddd8cc;--border-light:#edeae3;
+  --red:#c0392b;--red-pale:#fdf0ee;
+  --amber:#c87941;--amber-pale:#fdf3e7;
+  --blue-pale:#e8f0f8;--blue:#3a6ea5;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:15px}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(24,23,15,.96);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.06);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:52px}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:15px;color:rgba(255,255,255,.55);letter-spacing:.06em;flex-shrink:0}
+.nav-logo span{color:var(--green-mid)}
+.nav-links{display:flex;list-style:none;overflow-x:auto;gap:0}
+.nav-links a{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);text-decoration:none;padding:0 10px;height:52px;display:flex;align-items:center;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.nav-links a:hover{color:rgba(255,255,255,.7);border-bottom-color:var(--green-mid)}
+
+/* COVER */
+.cover{background:var(--ink);min-height:55vh;display:flex;flex-direction:column;justify-content:flex-end;padding:52px 64px 56px;position:relative;overflow:hidden}
+.cover::before{content:'';position:absolute;top:-20%;right:-10%;width:60%;height:130%;background:radial-gradient(ellipse,rgba(44,95,63,.3) 0%,transparent 65%);pointer-events:none}
+.cover::after{content:'';position:absolute;bottom:-20%;left:-5%;width:45%;height:80%;background:radial-gradient(ellipse,rgba(154,127,69,.15) 0%,transparent 65%);pointer-events:none}
+.cover-tag{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--green-mid);margin-bottom:20px;position:relative;z-index:1}
+.cover-title{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,5vw,62px);font-weight:300;color:#fff;line-height:1.1;margin-bottom:16px;position:relative;z-index:1}
+.cover-title em{font-style:italic;color:var(--green-mid)}
+.cover-sub{font-size:15px;font-weight:300;color:rgba(255,255,255,.45);max-width:600px;line-height:1.6;position:relative;z-index:1}
+.cover-meta{display:flex;gap:28px;flex-wrap:wrap;margin-top:32px;position:relative;z-index:1;padding-top:24px;border-top:1px solid rgba(255,255,255,.08)}
+.cover-meta-item{display:flex;flex-direction:column;gap:4px}
+.cm-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.cm-val{font-size:14px;font-weight:500;color:rgba(255,255,255,.65)}
+
+/* SECTIONS */
+.section{padding:68px 64px;max-width:1040px;margin:0 auto}
+.section--dark{background:var(--ink);max-width:100%;padding:68px 0}
+.section--dark .si{max-width:1040px;margin:0 auto;padding:0 64px}
+.section--pale{background:#f0ede6;max-width:100%;padding:60px 0}
+.section--pale .si{max-width:1040px;margin:0 auto;padding:0 64px}
+.section--green{background:var(--green);max-width:100%;padding:68px 0}
+.section--green .si{max-width:1040px;margin:0 auto;padding:0 64px}
+
+.ey{font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.ey--l{color:var(--green-mid)}
+.ey--w{color:rgba(255,255,255,.4)}
+h2{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,4vw,42px);font-weight:300;line-height:1.15;margin-bottom:16px}
+h2 em{font-style:italic;color:var(--green)}
+h2.dk{color:#fff} h2.dk em{color:var(--green-mid)}
+h2.gn{color:#fff} h2.gn em{color:var(--green-mid)}
+.lead{font-size:16px;font-weight:300;color:var(--muted);line-height:1.7;margin-bottom:24px;max-width:700px}
+.lead.dk{color:rgba(255,255,255,.5)}
+.divider{width:48px;height:2px;background:var(--green);margin:18px 0}
+
+/* CATEGORY BLOCKS */
+.cat-block{margin-bottom:56px}
+.cat-block:last-child{margin-bottom:0}
+.cat-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--border-light)}
+.cat-icon-big{width:40px;height:40px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cat-header-text h3{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.cat-header-text p{font-size:12px;color:var(--muted)}
+
+/* TASK ROWS */
+.task-list{display:flex;flex-direction:column;gap:2px}
+.task-row{display:grid;grid-template-columns:180px 90px 120px 1fr;gap:0;background:var(--white);border:1px solid var(--border-light)}
+.task-row:nth-child(even){background:rgba(234,242,236,.35)}
+.task-row.header{background:var(--ink);border-color:var(--ink)}
+.task-cell{padding:10px 14px;font-size:12px;line-height:1.5;border-right:1px solid var(--border-light)}
+.task-cell:last-child{border-right:none}
+.task-row.header .task-cell{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);border-right-color:rgba(255,255,255,.08)}
+.task-name{font-weight:500;color:var(--ink);font-size:13px}
+.task-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.time-pill{display:inline-block;background:var(--gold-pale);color:var(--gold);font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
+.pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:2px;display:inline-block}
+.pill.full{background:var(--green-pale);color:var(--green)}
+.pill.partial{background:var(--amber-pale);color:var(--amber)}
+.pill.none{background:var(--red-pale);color:var(--red)}
+.pill.future{background:rgba(197,219,201,.15);color:var(--green-light);border:1px solid rgba(44,95,63,.25)}
+.how{font-size:12px;color:var(--muted);line-height:1.5}
+.how strong{color:var(--green);font-weight:600}
+.how em{color:var(--amber);font-style:normal;font-weight:600}
+
+/* DEEP DIVE BOXES */
+.deep-dive{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.dd-card{background:var(--white);border:1px solid var(--border-light);border-left:3px solid var(--green);padding:18px 22px}
+.dd-card.amber{border-left-color:var(--amber)}
+.dd-card.red{border-left-color:var(--red)}
+.dd-card.future{border-left-color:var(--green-mid);background:var(--green-pale)}
+.dd-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.dd-title .badge{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;background:var(--green-pale);color:var(--green);border-radius:2px}
+.dd-title .badge.amber{background:var(--amber-pale);color:var(--amber)}
+.dd-title .badge.red{background:var(--red-pale);color:var(--red)}
+.dd-body{font-size:13px;color:var(--muted);line-height:1.7}
+.dd-body strong{color:var(--ink);font-weight:600}
+.dd-body .sys{color:var(--green);font-weight:600}
+
+/* ACTION INBOX SECTION */
+.inbox-visual{background:var(--ink);border:1px solid rgba(255,255,255,.08);padding:28px;margin:24px 0}
+.inbox-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.inbox-title{font-size:13px;font-weight:600;color:#fff}
+.inbox-count{font-size:12px;color:var(--green-mid);background:rgba(44,95,63,.3);padding:3px 10px;border-radius:10px}
+.inbox-items{display:flex;flex-direction:column;gap:8px}
+.inbox-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);padding:12px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
+.inbox-item.urgent{border-left:3px solid var(--red);background:rgba(192,57,43,.06)}
+.inbox-item.normal{border-left:3px solid var(--green-mid)}
+.inbox-item.low{border-left:3px solid rgba(255,255,255,.15)}
+.inbox-priority{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;white-space:nowrap;margin-top:2px}
+.inbox-priority.urgent{background:rgba(192,57,43,.3);color:#e07070}
+.inbox-priority.normal{background:rgba(44,95,63,.3);color:var(--green-mid)}
+.inbox-priority.low{background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)}
+.inbox-content-title{font-size:13px;font-weight:500;color:#fff;margin-bottom:3px}
+.inbox-content-sub{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4}
+.inbox-action{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--green-mid);border:1px solid rgba(197,219,201,.3);padding:4px 10px;white-space:nowrap;cursor:pointer}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin:28px 0}
+.stat-cell{padding:24px 16px;text-align:center;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03)}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;line-height:1;margin-bottom:6px}
+.stat-num.gr{color:var(--green-mid)}
+.stat-num.am{color:#d4a853}
+.stat-num.rd{color:#e07070}
+.stat-label{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;line-height:1.4}
+
+/* SUMMARY TABLE */
+.summary-table{width:100%;border-collapse:collapse;font-size:12px;margin:20px 0}
+.summary-table th{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}
+.summary-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.6);vertical-align:top}
+.summary-table tr:last-child td{border-bottom:none;font-weight:600;color:#fff;background:rgba(44,95,63,.15)}
+
+/* IMPACT */
+.impact-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.impact-card{padding:22px 26px;border:1px solid var(--border-light);background:var(--white)}
+.impact-card::before{content:'';display:block;width:32px;height:3px;background:var(--green);margin-bottom:14px}
+.impact-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px}
+.impact-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.impact-list li{font-size:12px;color:var(--muted);display:flex;gap:8px;line-height:1.5}
+.impact-list li::before{content:'→';color:var(--green);flex-shrink:0}
+
+/* PHASE BOXES */
+.phase-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:20px 0}
+.phase-card{padding:20px 22px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.phase-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green-mid);margin-bottom:10px}
+.phase-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:6px}
+.phase-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.55}
+
+/* SENSOR */
+.sensor-box{background:var(--gold-pale);border:1px solid rgba(154,127,69,.3);border-left:4px solid var(--gold);padding:24px 28px;margin:20px 0}
+.sensor-box h4{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.sensor-box p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:8px}
+.sensor-box p:last-child{margin-bottom:0}
+
+/* CLOSING */
+.closing{text-align:center;padding:64px;background:var(--ink);position:relative;overflow:hidden}
+.closing::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(44,95,63,.18) 0%,transparent 65%);pointer-events:none}
+.closing-q{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.5vw,38px);font-weight:300;color:#fff;line-height:1.3;max-width:600px;margin:0 auto 16px;position:relative;z-index:1}
+.closing-q em{font-style:italic;color:var(--green-mid)}
+.closing-sub{font-size:12px;color:rgba(255,255,255,.3);position:relative;z-index:1}
+
+@media(max-width:800px){
+  .nav{padding:0 20px}
+  .nav-links{display:none}
+  .cover,.section{padding:48px 24px}
+  .section--dark .si,.section--pale .si,.section--green .si{padding:0 24px}
+  .task-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+  .task-cell:nth-child(3),.task-cell:nth-child(4){grid-column:1/-1}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .impact-2col,.phase-grid{grid-template-columns:1fr}
+  .inbox-item{grid-template-columns:1fr}
+  .closing{padding:48px 24px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Care <span>Assistant</span></div>
+  <ul class="nav-links">
+    <li><a href="#comm">Комунікація</a></li>
+    <li><a href="#docs">Документи</a></li>
+    <li><a href="#logistics">Логістика</a></li>
+    <li><a href="#finance">Фінанси</a></li>
+    <li><a href="#pre">Передпроц.</a></li>
+    <li><a href="#post">Постпроц.</a></li>
+    <li><a href="#internal">Внутрішнє</a></li>
+    <li><a href="#marketing">Маркетинг</a></li>
+    <li><a href="#inbox">Action Inbox</a></li>
+    <li><a href="#roles">Ролі</a></li>
+    <li><a href="#not-auto">Межі</a></li>
+    <li><a href="#summary">Підсумок</a></li>
+  </ul>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-tag">Care Assistant · Детальний кейс</div>
+  <h1 class="cover-title">Що реально робить адміністратор<br>естетичної клініки — і що<br><em>бере на себе система</em></h1>
+  <p class="cover-sub">Повний розбір: 8 категорій задач, 35+ конкретних сценаріїв, механізм покриття системою і що залишається за людиною — назавжди.</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><div class="cm-label">Клініка</div><div class="cm-val">Revive Clinic, Львів</div></div>
+    <div class="cover-meta-item"><div class="cm-label">Адмінів</div><div class="cm-val">2 особи, 10:00–20:00</div></div>
+    <div class="cover-meta-item"><div class="cm-label">Робочих годин разом</div><div class="cm-val">~20 год/день</div></div>
+    <div class="cover-meta-item"><div class="cm-label">Зарплата</div><div class="cm-val">~42 500 ₴/міс кожен</div></div>
+    <div class="cover-meta-item"><div class="cm-label">Вартість 1 год адміна</div><div class="cm-val">~163 ₴/год</div></div>
+  </div>
+</div>
+
+<!-- ══ КОМУНІКАЦІЯ ══ -->
+<div class="section" id="comm">
+  <div class="ey">Категорія 1</div>
+  <h2>Комунікація з пацієнтами</h2>
+  <p class="lead">Найбільший пласт роботи — і найбільш автоматизований. Три канали одночасно, постійні переривання, кожне повідомлення потребує уваги.</p>
+
+  <div class="cat-block">
+    <div class="task-list">
+      <div class="task-row header">
+        <div class="task-cell">Задача</div>
+        <div class="task-cell">Час/день</div>
+        <div class="task-cell">Покриття</div>
+        <div class="task-cell">Як система покриває</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📅 Новий запис</div><div class="task-desc">Підібрати лікаря, процедуру, час. Внести в CRM.</div></div>
+        <div class="task-cell"><span class="time-pill">30–60 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> приймає запит 24/7, Rules Engine підбирає доступний слот, синхронізує з CRM автоматично</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📞 Підтвердження записів</div><div class="task-desc">Дзвінки/SMS/Telegram «підтверджуєте візит?»</div></div>
+        <div class="task-cell"><span class="time-pill">20–40 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> за 7д / 2д / 1д / 1год автоматично. Не відповів → адмін в Action Inbox</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🔄 Перенесення запису</div><div class="task-desc">Пацієнт просить іншу дату або час</div></div>
+        <div class="task-cell"><span class="time-pill">20–30 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> показує доступні слоти, пацієнт обирає, CRM оновлюється автоматично без участі адміна</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">❌ Скасування</div><div class="task-desc">Звільнення слоту, повідомлення waitlist</div></div>
+        <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> приймає скасування, автоматично пропонує звільнений слот першому у waitlist</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">💬 FAQ у месенджерах</div><div class="task-desc">Ціни, адреса, години, підготовка до процедур</div></div>
+        <div class="task-cell"><span class="time-pill">30–90 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> відповідає миттєво 24/7 включно в обід. Нестандартне → адмін з контекстом переписки</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🏥 Первинний тріаж</div><div class="task-desc">«У мене акне» → до кого записати</div></div>
+        <div class="task-cell"><span class="time-pill">20–30 хв</span></div>
+        <div class="task-cell"><span class="pill partial">⚠ 60%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> структурована анкета → рекомендація лікаря. Складний кейс → адмін з усім контекстом</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">⏳ Waitlist</div><div class="task-desc">Пацієнт хоче раніше — черга на слот</div></div>
+        <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> додає в чергу за процедурою і лікарем. При скасуванні — автоматично пропонує слот</div>
+      </div>
+    </div>
+
+    <div class="deep-dive">
+      <div class="dd-card">
+        <div class="dd-title">Прихований поглинач часу: «Я запізнюсь на 15 хв» <span class="badge">Щодня 3–5 разів</span></div>
+        <div class="dd-body">Адмін приймає повідомлення, оцінює ситуацію, повідомляє лікаря, вирішує чи скорочувати процедуру. Часто це відбувається між прийомом інших пацієнтів і всі кроки виконуються в паніці.<br><br><span class="sys">Система:</span> бот автоматично уточнює ETA, одразу повідомляє лікаря, пропонує пацієнту варіанти (скорочена процедура / перенесення). Лікар бачить оновлений графік без жодного дзвінка адміна.</div>
+      </div>
+      <div class="dd-card amber">
+        <div class="dd-title">«Можна я приведу маму?» <span class="badge amber">Нестандартний кейс</span></div>
+        <div class="dd-body">Здається дрібницею — але треба перевірити чи є вільне місце в залі очікування, чи є обмеження для супроводжуючих, повідомити адміна. Якщо пропустити — незручна ситуація при прийомі.<br><br><span class="sys">Система:</span> падає в Action Inbox з контекстом. Адмін відповідає одним кліком. Нотатка прив'язується до запису.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ДОКУМЕНТИ І ОПЛАТА ══ -->
+<div class="section--pale" id="docs">
+  <div class="si">
+    <div class="ey">Категорія 2</div>
+    <h2>Документи, оплата і сертифікати</h2>
+    <p class="lead">Частина задач автоматизується повністю, частина — потребує фізичної присутності людини. Чітке розмежування зменшує помилки.</p>
+
+    <div class="task-list">
+      <div class="task-row header">
+        <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📋 Анкета пацієнта</div><div class="task-desc">Алергії, хвороби, ліки, контакти</div></div>
+        <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 85%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> надсилає анкету до візиту, пацієнт заповнює у зручний час. 15% — не заповнили заздалегідь, адмін питає при прийомі.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📄 Інформована згода</div><div class="task-desc">Підпис перед процедурою</div></div>
+        <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 85%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> надсилає документ, пацієнт підписує цифровим підписом до прийому. Зберігається в Proton Drive.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">💵 Готівка і каса</div><div class="task-desc">Прийом, здача, касовий ордер, фіскальний чек</div></div>
+        <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+        <div class="task-cell"><span class="pill none">✗ 0%</span></div>
+        <div class="task-cell how"><em>Залишається людині:</em> готівкові операції вимагають фізичної присутності. Система фіксує факт оплати.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">💳 Оплата карткою</div><div class="task-desc">Термінал, чек, підтвердження</div></div>
+        <div class="task-cell"><span class="time-pill">5–10 хв</span></div>
+        <div class="task-cell"><span class="pill partial">⚠ 40%</span></div>
+        <div class="task-cell how"><strong class="sys">Система:</strong> передоплата через бота (посилання на оплату). Оплата при відвідуванні — термінал, людина.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🏦 Контроль передоплати</div><div class="task-desc">Перевірити що надійшла перед записом</div></div>
+        <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> нагадує пацієнту про передоплату. При скасуванні пізно — пояснює правила без незручного діалогу</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🎁 Сертифікати</div><div class="task-desc">Оформлення подарункових сертифікатів</div></div>
+        <div class="task-cell"><span class="time-pill">5–15 хв</span></div>
+        <div class="task-cell"><span class="pill partial">⚠ 50%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> приймає замовлення і оплату онлайн. Фізичне оформлення і видача — людина.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ЛОГІСТИКА ══ -->
+<div class="section" id="logistics">
+  <div class="ey">Категорія 3 · Нова</div>
+  <h2>Логістика і розклад</h2>
+  <p class="lead">Цього майже ніколи немає в посадових інструкціях — але це з'їдає до години на день і безпосередньо впливає на дохід клініки.</p>
+
+  <div class="task-list">
+    <div class="task-row header">
+      <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🩺 Підготовка кабінету</div><div class="task-desc">Матеріали, апарат, чистота після попереднього</div></div>
+      <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+      <div class="task-cell"><span class="pill partial">⚠ 40%</span></div>
+      <div class="task-cell how"><strong class="sys">Система:</strong> за 15 хв до процедури — checklist для персоналу. Dermapen: свій список. Nordlys: свій. Не відмічено → Action Inbox</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">⏱ Контроль запізнень</div><div class="task-desc">Пацієнт запізнюється на 15–20 хв</div></div>
+      <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> уточнює ETA, повідомляє лікаря, пропонує скорочену процедуру або перенесення. Лікар — оновлений графік без дзвінків</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">👨‍⚕️ Вікна лікаря</div><div class="task-desc">Дірки між процедурами 15–30 хв</div></div>
+      <div class="task-cell"><span class="time-pill">10–30 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+      <div class="task-cell how"><strong class="sys">Rules Engine:</strong> бачить вільні вікна і автоматично пропонує waitlist-пацієнтам з підходящою процедурою</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🔁 Заміна лікаря</div><div class="task-desc">Лікар захворів. 8 пацієнтів на сьогодні.</div></div>
+      <div class="task-cell"><span class="time-pill">15–30 хв</span></div>
+      <div class="task-cell"><span class="pill partial">⚠ 60%</span></div>
+      <div class="task-cell how"><strong class="sys">Система:</strong> одна кнопка → масова розсилка всім. Пацієнт обирає: перенести / до іншого / скасувати. CRM оновлюється автоматично</div>
+    </div>
+  </div>
+
+  <div class="deep-dive">
+    <div class="dd-card">
+      <div class="dd-title">Чому вікна лікаря — це великі гроші <span class="badge">ROI-кейс</span></div>
+      <div class="dd-body">Якщо лікар має 3 вільних вікна по 30 хвилин на день — це 1.5 години незаробленого часу. При середньому чеку 2 500 ₴ за годину — <strong>3 750 ₴/день</strong> або ~97 000 ₴/місяць потенційно незаробленого доходу.<br><br><span class="sys">Rules Engine</span> бачить ці вікна і автоматично пропонує waitlist-пацієнтам відповідні процедури. Навіть якщо заповнити половину — це суттєва різниця.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ФІНАНСИ ══ -->
+<div class="section--pale" id="finance">
+  <div class="si">
+    <div class="ey">Категорія 4 · Нова</div>
+    <h2>Фінанси і втрати доходу</h2>
+    <p class="lead">Найменш видима категорія — і найдорожча. Кожен no-show, кожне пізнє скасування, кожен пацієнт що «зник» — це конкретні гроші.</p>
+
+    <div class="task-list">
+      <div class="task-row header">
+        <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🚫 No-show ризик</div><div class="task-desc">Визначити хто з завтрашніх може не прийти</div></div>
+        <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">AI:</strong> аналізує історію. Хронічний no-show → додаткове нагадування + запит передоплати. Ризик видно в розкладі.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">⚠ Late cancellation</div><div class="task-desc">Скасування за 1–2 год без пояснення</div></div>
+        <div class="task-cell"><span class="time-pill">10 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> пояснює політику нейтрально. Без незручної розмови адміна. Waitlist отримує пропозицію миттєво.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">💰 Повернення коштів</div><div class="task-desc">Пацієнт просить повернення авансу</div></div>
+        <div class="task-cell"><span class="time-pill">10–30 хв</span></div>
+        <div class="task-cell"><span class="pill partial">⚠ 30%</span></div>
+        <div class="task-cell how"><strong class="sys">Workflow:</strong> запит → контекст → approval власника. Без стихійних рішень адміна «бо соромно відмовити»</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📈 LTV і churn</div><div class="task-desc">Хто перестав приходити і коли</div></div>
+        <div class="task-cell"><span class="time-pill">20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+        <div class="task-cell how"><strong class="sys">Система:</strong> автоматично сегментує «в зоні ризику». Незакінчений treatment plan → персоналізований win-back</div>
+      </div>
+    </div>
+
+    <div class="deep-dive">
+      <div class="dd-card">
+        <div class="dd-title">Скільки коштує 1 no-show при 150 пацієнтах/міс <span class="badge">Розрахунок</span></div>
+        <div class="dd-body">15% no-show × 150 пацієнтів = <strong>22–23 втрачених слоти на місяць</strong>.<br>При чеку 2 500 ₴ = <strong>55 000–57 000 ₴/місяць</strong> або ~686 000 ₴/рік.<br><br>Система знижує no-show на ~50% = повертає ~343 000 ₴/рік. Це більше ніж річна зарплата одного адміна.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ПЕРЕДПРОЦЕДУРНЕ ══ -->
+<div class="section" id="pre">
+  <div class="ey">Категорія 5 · Нова</div>
+  <h2>Передпроцедурна підготовка</h2>
+  <p class="lead">Якщо пацієнт прийшов непідготовленим — слот втрачено, лікар дратується, пацієнт відчуває провину. Все це можна попередити.</p>
+
+  <div class="task-list">
+    <div class="task-row header">
+      <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">💊 Перевірка протипоказань</div><div class="task-desc">Вагітність, антибіотики, ретиноїди, засмага</div></div>
+      <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот + Rules Engine:</strong> при записі — анкета з прапорцями ризику. Виявлено протипоказання → блок або approval лікаря</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">☀ Підготовка до процедури</div><div class="task-desc">«Не засмагати», «не брити», «прийти з чистою шкірою»</div></div>
+      <div class="task-cell"><span class="time-pill">10 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> серія нагадувань. За 7д — загальна підготовка. За 1д — конкретні інструкції. Вранці — фінальне. Адаптовано під процедуру.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🧬 Аналізи перед прийомом</div><div class="task-desc">Здати і надіслати результати вчасно</div></div>
+      <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+      <div class="task-cell"><span class="pill partial">⚠ 60%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> нагадує коли здати, за 3д до прийому — «чи здали?». Пацієнт завантажує в Proton Drive. Лікар бачить до прийому.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">📝 Анкета перед повторним оглядом</div><div class="task-desc">Зібрати дані: стан, побічні, питання</div></div>
+      <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 85%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> за 24 год до повторного огляду — коротка анкета. Лікар бачить відповіді перед прийомом. 15% — не відповідають.</div>
+    </div>
+  </div>
+
+  <div class="deep-dive">
+    <div class="dd-card amber">
+      <div class="dd-title">Прихована проблема: пацієнт прийшов із засмагою на лазер <span class="badge amber">Фінансовий ризик</span></div>
+      <div class="dd-body">Лікар відмовляє — слот повністю втрачено. Пацієнт незадоволений. Адмін мусить запропонувати компенсацію або перенесення. Разом це 2–4 години наслідків від однієї несвоєчасної перевірки.<br><br><span class="sys">Rules Engine</span> при записі на лазер автоматично запитує «чи були ви на сонці або в солярії протягом останніх 4 тижнів?» і при ствердній відповіді — блокує запис з поясненням. До прийому, не під час.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ПОСТПРОЦЕДУРНЕ ══ -->
+<div class="section--pale" id="post">
+  <div class="si">
+    <div class="ey">Категорія 6 · Нова · Тут система найсильніша</div>
+    <h2>Постпроцедурний моніторинг</h2>
+    <p class="lead">Тут продукт дає унікальну цінність якої немає ніде. Клініка вперше бачить що відбувається після виходу пацієнта з кабінету.</p>
+
+    <div class="task-list">
+      <div class="task-row header">
+        <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🧴 After-care інструкції</div><div class="task-desc">Що робити після лазеру, Endymed, пілінгу</div></div>
+        <div class="task-cell"><span class="time-pill">15–20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> надсилає за затвердженим клінічним протоколом клініки одразу після процедури. По днях: 1, 3, 7. 10% — не відкрили або заблокували.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📷 Контроль загоєння</div><div class="task-desc">Фото через 3 і 7 днів після процедури</div></div>
+        <div class="task-cell"><span class="time-pill">15 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 85%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> нагадує надіслати фото. Зберігається в Proton Drive. Лікар бачить динаміку. 15% — не надсилають → Action Inbox.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🚨 Побічні реакції</div><div class="task-desc">Нетипові симптоми після процедури</div></div>
+        <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+        <div class="task-cell"><span class="pill partial">⚠ 60%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> відповідає за затвердженим клінічним протоколом клініки. Симптоми поза протоколом → ескалація до лікаря з контекстом.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">💬 «Це нормально?»</div><div class="task-desc">Найчастіший запит після будь-якої процедури</div></div>
+        <div class="task-cell"><span class="time-pill">30–60 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 70%</span></div>
+        <div class="task-cell how"><strong class="sys">FAQ за протоколом:</strong> 70% відповідей покриваються клінічним протоколом. Решта → лікар через систему, не в особистий телефон.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">⏳ Follow-up повторний огляд</div><div class="task-desc">Нагадати через 3–6 місяців</div></div>
+        <div class="task-cell"><span class="time-pill">15–20 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> пише першим через заданий інтервал. 10% — не відповідають на жоден канал → адмін дзвонить особисто.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🔄 Незавершені курси</div><div class="task-desc">Пацієнт зробив 3 з 6 сеансів і зник</div></div>
+        <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Бот:</strong> «Ви пройшли 3 з 6 сеансів Nordlys. Залишились ще три для повного результату — продовжимо?» 10% → адмін дзвонить.</div>
+      </div>
+    </div>
+
+    <div class="deep-dive">
+      <div class="dd-card">
+        <div class="dd-title">Чому постпроцедурний моніторинг — це нова категорія цінності <span class="badge">Унікально</span></div>
+        <div class="dd-body">Жодна існуюча система — ні Pabau, ні PatientNow, ні Klara — не веде пацієнта між процедурами з таким рівнем деталізації. Вони надсилають один загальний after-care лист. Ми надсилаємо нагадування по днях, просимо фото, відповідаємо на питання за протоколом, ескалуємо тривожні симптоми.<br><br>Для клініки це означає: <strong>менше ускладнень, кращі результати, сильніші кейси до/після, більше рекомендацій</strong>. Для пацієнта — відчуття що про нього піклуються навіть коли він вдома.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ПРОДАЖІ І МАТЕРІАЛИ ══ -->
+<div class="section" id="sales">
+  <div class="ey">Категорія 7</div>
+  <h2>Продажі, матеріали і склад</h2>
+  <p class="lead">Тут є задачі де людина незамінна — і задачі де ручна праця просто накопичує помилки.</p>
+
+  <div class="task-list">
+    <div class="task-row header">
+      <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🧴 Продаж засобів</div><div class="task-desc">Порекомендувати, пояснити, упакувати, видати</div></div>
+      <div class="task-cell"><span class="time-pill">15–30 хв</span></div>
+      <div class="task-cell"><span class="pill partial">⚠ 50%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> нагадує коли засіб закінчується, приймає замовлення. <em>Упаковка і видача — людина.</em></div>
+      </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">☕ Чай/кава гостям</div><div class="task-desc">Запропонувати, приготувати, подати</div></div>
+      <div class="task-cell"><span class="time-pill">10–20 хв</span></div>
+      <div class="task-cell"><span class="pill none">✗ 0%</span></div>
+      <div class="task-cell how"><em>Залишається людині — завжди.</em> Це душа клініки і частина преміального сервісу.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">📦 Замовлення у дистриб'ютора</div><div class="task-desc">Моніторинг залишків, формування замовлення</div></div>
+      <div class="task-cell"><span class="time-pill">20–40 хв</span></div>
+      <div class="task-cell"><span class="pill partial">⚠ 40%</span></div>
+      <div class="task-cell how"><strong class="sys">Система:</strong> відстежує що продається і з якою швидкістю, формує список. Підтвердження і відправлення — людина.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🗄 Розкладання по шафах</div><div class="task-desc">Прийом поставки, перевірка, сортування</div></div>
+      <div class="task-cell"><span class="time-pill">20–40 хв</span></div>
+      <div class="task-cell"><span class="pill future">◈ Phase 3</span></div>
+      <div class="task-cell how"><em>Зараз — людина повністю.</em> <strong class="sys">Phase 3:</strong> IoT датчики на шафі — автоматичний облік без ручного перерахунку.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">💰 Допродаж</div><div class="task-desc">Запропонувати курс, суміжну процедуру</div></div>
+      <div class="task-cell"><span class="time-pill">15–30 хв</span></div>
+      <div class="task-cell"><span class="pill partial">⚠ 60%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> пропонує наступний сеанс коли курс закінчується. <em>Живий продаж і переконання — адмін.</em></div>
+    </div>
+  </div>
+
+  <div class="sensor-box">
+    <h4>IoT датчики на шафі — Phase 3</h4>
+    <p>Ваговий датчик або RFID на кожній полиці: система в реальному часі знає скільки залишилось кожного препарату і засобу. При критичному рівні — автоматичне повідомлення адміну і пропозиція замовлення.</p>
+    <p><strong>Що це дає:</strong> точна собівартість кожної процедури (скільки матеріалу реально витрачається), правильне ціноутворення, ніколи не буде ситуації «немає потрібного філера прямо перед процедурою».</p>
+    <p><strong>Додатково:</strong> автоматичний облік знімає з адміна одне з найбільш монотонних завдань і повністю виключає помилки при ручному перерахунку.</p>
+  </div>
+</div>
+
+<!-- ══ ВНУТРІШНЯ КООРДИНАЦІЯ ══ -->
+<div class="section--pale" id="internal">
+  <div class="si">
+    <div class="ey">Категорія 8 · Нова · Про це забувають всі</div>
+    <h2>Внутрішня координація</h2>
+    <p class="lead">Передача інформації між змінами, між адмінами, між адміном і лікарем. Все що зараз тримається в голові або передається усно — і регулярно губиться.</p>
+
+    <div class="task-list">
+      <div class="task-row header">
+        <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📣 Передача між змінами</div><div class="task-desc">«Пацієнт нервує», «подзвонити ввечері Оксані»</div></div>
+        <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+        <div class="task-cell how"><strong class="sys">Action Feed:</strong> внутрішня стрічка нотаток прив'язана до пацієнта. Наступна зміна бачить весь контекст.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">📝 Внутрішні нотатки</div><div class="task-desc">Не для пацієнта: «складний», «часто запізнюється»</div></div>
+        <div class="task-cell"><span class="time-pill">10 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+        <div class="task-cell how"><strong class="sys">Internal notes:</strong> видно тільки персоналу. Пацієнт не має доступу. Наступний адмін — в контексті.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">🔔 Термінові задачі від лікаря</div><div class="task-desc">«Нагадайте пацієнту зателефонувати після»</div></div>
+        <div class="task-cell"><span class="time-pill">10 хв</span></div>
+        <div class="task-cell"><span class="pill full">✓ 90%</span></div>
+        <div class="task-cell how"><strong class="sys">Internal task manager:</strong> лікар створює задачу → з'являється в Action Inbox відповідального → дедлайн → статус.</div>
+      </div>
+      <div class="task-row">
+        <div class="task-cell"><div class="task-name">👩‍⚕️ Комунікація з лікарями</div><div class="task-desc">«Що відповісти пацієнту?», «Чи можна цю процедуру?»</div></div>
+        <div class="task-cell"><span class="time-pill">15–30 хв</span></div>
+        <div class="task-cell"><span class="pill partial">⚠ 40%</span></div>
+        <div class="task-cell how"><strong class="sys">Rules Engine:</strong> типові питання сумісності — автоматично. Нестандартне → approval flow. Лікар — один клік.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ МАРКЕТИНГ ══ -->
+<div class="section" id="marketing">
+  <div class="ey">Категорія 9 · Нова</div>
+  <h2>Маркетинг — те що реально робить адмін</h2>
+  <p class="lead">У більшості клінік немає окремого маркетолога. Всі ці задачі — на адміні. І вони забирають час від основної роботи з пацієнтами.</p>
+
+  <div class="task-list">
+    <div class="task-row header">
+      <div class="task-cell">Задача</div><div class="task-cell">Час/день</div><div class="task-cell">Покриття</div><div class="task-cell">Як система покриває</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">📱 Instagram Direct</div><div class="task-desc">«Скільки коштує чистка?», «Є місця на суботу?»</div></div>
+      <div class="task-cell"><span class="time-pill">30–60 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 80%</span></div>
+      <div class="task-cell how"><strong class="sys">AI інтеграція:</strong> бот відповідає в Instagram Direct 24/7. Складні запити → адмін з контекстом переписки.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">⭐ Збір відгуків</div><div class="task-desc">NPS, Google Reviews</div></div>
+      <div class="task-cell"><span class="time-pill">10–15 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+      <div class="task-cell how"><strong class="sys">Бот:</strong> через 48 год — оцінка 1–5. Висока → посилання на Google. Низька → адмін в Action Inbox негайно.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🎉 Акції і кампанії</div><div class="task-desc">Надіслати пропозицію потрібному сегменту</div></div>
+      <div class="task-cell"><span class="time-pill">20 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+      <div class="task-cell how"><strong class="sys">Campaign Engine:</strong> вибір сегменту одним кліком → система надсилає через правильний канал → відстежує конверсії.</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">🧠 Сегментація</div><div class="task-desc">«Всі після ботоксу», «курс закінчується наступного місяця»</div></div>
+      <div class="task-cell"><span class="time-pill">20 хв</span></div>
+      <div class="task-cell"><span class="pill full">✓ 100%</span></div>
+      <div class="task-cell how"><strong class="sys">AI сегменти:</strong> автоматично на основі treatment plans і поведінки. Без ручних вибірок з CRM.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACTION INBOX ══ -->
+<div class="section--dark" id="inbox">
+  <div class="si">
+    <div class="ey--l ey">Ключова концепція</div>
+    <h2 class="dk">Action Inbox — <em>серце системи</em></h2>
+    <p class="lead dk">Найбільший хаос у клініці створюють не великі задачі — а 200 маленьких мікровзаємодій на день. Саме їх Action Inbox перетворює з хаосу в керовану чергу.</p>
+
+    <div class="inbox-visual">
+      <div class="inbox-header">
+        <div class="inbox-title">Action Inbox · Зараз</div>
+        <div class="inbox-count">7 потребують уваги</div>
+      </div>
+      <div class="inbox-items">
+        <div class="inbox-item urgent">
+          <span class="inbox-priority urgent">Терміново</span>
+          <div>
+            <div class="inbox-content-title">Побічна реакція після Endymed — Марія К.</div>
+            <div class="inbox-content-sub">«У мене дуже сильний набряк, вже третій день, це нормально?» · 08:42 · Бот дав стандартну відповідь, симптом виходить за норму</div>
+          </div>
+          <span class="inbox-action">Зв'язатись</span>
+        </div>
+        <div class="inbox-item urgent">
+          <span class="inbox-priority urgent">Терміново</span>
+          <div>
+            <div class="inbox-content-title">Низька оцінка — Олег В. — 2 з 5</div>
+            <div class="inbox-content-sub">«Час очікування більше 30 хвилин, незручно» · Вчора 19:15 · Відповіді не було</div>
+          </div>
+          <span class="inbox-action">Відповісти</span>
+        </div>
+        <div class="inbox-item normal">
+          <span class="inbox-priority normal">Звичайне</span>
+          <div>
+            <div class="inbox-content-title">Запит на approval — лазерна епіляція після засмаги</div>
+            <div class="inbox-content-sub">Анна П. хоче записатись на AlexStar, відмітила засмагу 2 тижні тому · Rules Engine заблокував · Потрібне рішення лікаря</div>
+          </div>
+          <span class="inbox-action">До лікаря</span>
+        </div>
+        <div class="inbox-item normal">
+          <span class="inbox-priority normal">Звичайне</span>
+          <div>
+            <div class="inbox-content-title">«Можна я приведу маму?» — Тетяна Р.</div>
+            <div class="inbox-content-sub">Запис на Dermapen завтра о 14:30 · Питання про супроводжуючого · Відповіді не було 4 год</div>
+          </div>
+          <span class="inbox-action">Відповісти</span>
+        </div>
+        <div class="inbox-item low">
+          <span class="inbox-priority low">Низький</span>
+          <div>
+            <div class="inbox-content-title">Голосове повідомлення — бот не зрозумів</div>
+            <div class="inbox-content-sub">Instagram Direct · Запит на запис або питання · Потребує прослуховування і відповіді</div>
+          </div>
+          <span class="inbox-action">Прослухати</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:rgba(255,255,255,.45);margin-top:16px;line-height:1.6">Кожен елемент черги містить повний контекст: що саме написав пацієнт, яка у нього історія, що вже спробував зробити бот, який наступний крок рекомендується. Адмін ніколи не починає з нуля.</p>
+
+    <div class="phase-grid" style="margin-top:24px">
+      <div class="phase-card">
+        <div class="phase-label">Пріоритизація</div>
+        <div class="phase-title">Автоматична за типом</div>
+        <div class="phase-desc">Побічна реакція і незадоволений пацієнт — вгорі. Питання про ціну — внизу. Адмін завжди знає з чого починати.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Контекст</div>
+        <div class="phase-title">Повна картина одразу</div>
+        <div class="phase-desc">Що написав пацієнт, його історія, що вже відповів бот, рекомендований наступний крок. Без перемикання між вкладками.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Результат</div>
+        <div class="phase-title">Черга замість хаосу</div>
+        <div class="phase-desc">Адмін обробляє передбачуваний потік, а не «гасить пожежі». Нічого не падає між стільцями.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ПІДСУМОК ══ -->
+<div class="section" id="summary">
+  <div class="ey">Підсумок</div>
+  <h2>Скільки часу реально <em>звільняється</em></h2>
+  <p class="lead">Чесний підрахунок — не маркетингові 80%, а реальні цифри з поясненням кожної.</p>
+
+  <div class="task-list" style="margin-bottom:32px">
+    <div class="task-row header" style="background:var(--ink)">
+      <div class="task-cell" style="color:rgba(255,255,255,.55)">Категорія</div>
+      <div class="task-cell" style="color:rgba(255,255,255,.55)">Час/день зараз</div>
+      <div class="task-cell" style="color:rgba(255,255,255,.55)">Після системи</div>
+      <div class="task-cell" style="color:rgba(255,255,255,.55)">Звільняється</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Комунікація з пацієнтами</div></div>
+      <div class="task-cell">130–220 хв</div>
+      <div class="task-cell">30–50 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~100–170 хв</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Документи і оплата</div></div>
+      <div class="task-cell">50–80 хв</div>
+      <div class="task-cell">20–30 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~30–50 хв</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Логістика і розклад</div></div>
+      <div class="task-cell">45–90 хв</div>
+      <div class="task-cell">15–30 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~30–60 хв</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Передпроцедурне</div></div>
+      <div class="task-cell">30–45 хв</div>
+      <div class="task-cell">5–10 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~25–35 хв</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Постпроцедурний моніторинг</div></div>
+      <div class="task-cell">70–115 хв</div>
+      <div class="task-cell">10–20 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~60–95 хв</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Внутрішня координація</div></div>
+      <div class="task-cell">45–65 хв</div>
+      <div class="task-cell">10–15 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~35–50 хв</div>
+    </div>
+    <div class="task-row">
+      <div class="task-cell"><div class="task-name">Маркетинг</div></div>
+      <div class="task-cell">80–115 хв</div>
+      <div class="task-cell">15–25 хв</div>
+      <div class="task-cell" style="color:var(--green);font-weight:600">~65–90 хв</div>
+    </div>
+    <div class="task-row" style="background:var(--green-pale);border:2px solid var(--green)">
+      <div class="task-cell" style="font-weight:700;color:var(--green)">РАЗОМ</div>
+      <div class="task-cell" style="font-weight:700">450–730 хв / день</div>
+      <div class="task-cell" style="font-weight:700">105–180 хв / день</div>
+      <div class="task-cell" style="font-weight:700;color:var(--green)">~345–550 хв / день</div>
+    </div>
+  </div>
+
+  <div class="impact-2col">
+    <div class="impact-card">
+      <div class="impact-title">Що залишається за людиною — назавжди</div>
+      <ul class="impact-list">
+        <li>Готівкові операції, каса, фіскальні чеки</li>
+        <li>Зустріч гостя, чай/кава, перше враження</li>
+        <li>Конфлікти і скарги — потребує емпатії</li>
+        <li>Живий продаж і переконання</li>
+        <li>Фізичне оформлення сертифікатів</li>
+        <li>Рішення в форс-мажорних ситуаціях</li>
+      </ul>
+    </div>
+    <div class="impact-card">
+      <div class="impact-title">Що адмін робить зі звільненим часом</div>
+      <ul class="impact-list">
+        <li>Якісна зустріч і супровід кожного гостя</li>
+        <li>Активний живий продаж засобів і курсів</li>
+        <li>Win-back дзвінки по неактивній базі</li>
+        <li>Підтримка складних пацієнтів з увагою</li>
+        <li>Обслуговувати більше пацієнтів без нового адміна</li>
+        <li>Відкрити нову локацію без пропорційного збільшення штату</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:var(--ink);padding:28px 32px;margin-top:16px">
+    <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px">Фінансовий вплив для двох адмінів Revive</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--green-mid);line-height:1;margin-bottom:6px">~6 год</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">звільняється щодня разом<br>у двох адмінів</div>
+      </div>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--green-mid);line-height:1;margin-bottom:6px">~980 ₴</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">вартість цього часу<br>за зарплатою (6 год × 163 ₴)</div>
+      </div>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--green-mid);line-height:1;margin-bottom:6px">~25 500 ₴</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">на місяць — час що можна<br>спрямувати на зростання</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROLES SECTION -->
+<div class="section--dark" id="roles">
+  <div class="si">
+    <div class="ey--l ey">Чотири ролі в системі</div>
+    <h2 class="dk">Хто що бачить — і <em>чому це важливо</em></h2>
+    <p class="lead dk">Не «бот і адмін» — а чотири різних користувачі з різними потребами і різним інтерфейсом до тих самих даних.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0">
+      <div style="background:rgba(90,170,112,.07);border:1px solid rgba(90,170,112,.2);padding:24px 28px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#5aaa70;margin-bottom:14px">🧑 Пацієнт · Telegram + Patient Portal</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#5aaa70">→</span>Щоденні нагадування за персональним протоколом</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#5aaa70">→</span>Відмітка виконання кнопкою в Telegram</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#5aaa70">→</span>Patient Portal: план всіх лікарів, трекер, аналізи, фото прогресу</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#5aaa70">→</span>Запис, перенесення, скасування без дзвінків</li>
+        </ul>
+      </div>
+      <div style="background:rgba(184,151,90,.07);border:1px solid rgba(184,151,90,.2);padding:24px 28px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#b8975a;margin-bottom:14px">🗂 Адміністратор · Action Inbox + Proton Portal</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#b8975a">→</span>Всі канали в одному місці (Telegram, Viber, Instagram)</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#b8975a">→</span>Action Inbox з пріоритизацією і повним контекстом</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#b8975a">→</span>Записи, підтвердження, замовлення засобів</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#b8975a">→</span>НЕ бачить медичних даних і повного ПІБ пацієнтів</li>
+        </ul>
+      </div>
+      <div style="background:rgba(74,126,181,.07);border:1px solid rgba(74,126,181,.2);padding:24px 28px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#4a7eb5;margin-bottom:14px">👨‍⚕️ Лікар · Картки пацієнтів + Approval</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#4a7eb5">→</span>Повна картка: анкета, adherence між візитами, фото загоєння</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#4a7eb5">→</span>Approval flow: нестандартні запити — один клік</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#4a7eb5">→</span>Вводить план лікування — AI структурує і надсилає</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#4a7eb5">→</span>Медичні рішення — завжди за лікарем, система виконує</li>
+        </ul>
+      </div>
+      <div style="background:rgba(138,106,181,.07);border:1px solid rgba(138,106,181,.2);padding:24px 28px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#8a6ab5;margin-bottom:14px">👑 Власник · Дашборд + Аналітика</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#8a6ab5">→</span>No-show відсоток, LTV, завантаженість лікарів</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#8a6ab5">→</span>Виручка по процедурах і лікарях</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#8a6ab5">→</span>Час адмінів: ручна робота vs автоматика</li>
+          <li style="font-size:13px;color:rgba(255,255,255,.55);display:flex;gap:8px"><span style="color:#8a6ab5">→</span>Approval повернень коштів — тільки через власника</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOT AUTOMATED -->
+<div class="section" id="not-auto">
+  <div class="ey">Межі системи</div>
+  <h2>Що система <em>ніколи</em> не автоматизує</h2>
+  <p class="lead">Це не слабкість — це принципова позиція. Деякі речі потребують людини. Завжди.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0">
+    <div style="background:var(--red-pale);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--red);padding:20px 24px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">✗ Конфлікти і скарги</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Потребують емпатії, вибачення і прийняття рішень. Бот тут зіпсує відносини більше ніж виправить.</div>
+    </div>
+    <div style="background:var(--red-pale);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--red);padding:20px 24px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">✗ Складні медичні рішення</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Система виконує протокол затверджений лікарем. Сам протокол і всі відхилення — завжди медичне рішення лікаря.</div>
+    </div>
+    <div style="background:var(--red-pale);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--red);padding:20px 24px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">✗ Перше враження</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Зустріч гостя, посмішка, чай/кава, атмосфера клініки. Це душа сервісу — її не автоматизують.</div>
+    </div>
+    <div style="background:var(--red-pale);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--red);padding:20px 24px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">✗ Повернення коштів</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Будь-яке повернення потребує approval власника. Без стихійних рішень адміна «бо соромно відмовити».</div>
+    </div>
+    <div style="background:var(--red-pale);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--red);padding:20px 24px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">✗ VIP-пацієнти</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Позначаються в системі — бот не надсилає масових кампаній. Комунікація тільки персональна від адміна або лікаря.</div>
+    </div>
+    <div style="background:var(--red-pale);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--red);padding:20px 24px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">✗ Готівкові операції</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Фізична транзакція. Каса, чек, здача — потребує присутності людини за стійкою.</div>
+    </div>
+  </div>
+
+  <!-- RULES ENGINE SOURCES -->
+  <div style="background:var(--ink);padding:28px 32px;margin-top:8px">
+    <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px">Rules Engine — звідки беруться правила (не магія)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:18px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green-mid);margin-bottom:8px">Рівень 1</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px">Клінічні протоколи</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">Затверджені лікарями клініки правила для кожної процедури. Хто затвердив, коли. Юридична відповідальність — на лікарі.</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:18px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green-mid);margin-bottom:8px">Рівень 2</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px">Налаштування лікаря</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">Кожен лікар може налаштувати власні правила. Один — SMAS після філерів через 21 день, інший — через 14. Обидва варіанти в системі.</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:18px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green-mid);margin-bottom:8px">Рівень 3</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px">Історія пацієнта</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">Що і коли робилось, які реакції, протипоказання в анкеті. Rules Engine читає картку при кожному запиті на запис.</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:18px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green-mid);margin-bottom:8px">Рівень 4</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px">Бізнес-політики</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">Депозит, мінімальний термін скасування, правила waitlist. Власник налаштовує сам без участі розробників.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="closing">
+  <p class="closing-q">Адміністратор — це обличчя клініки.<br><em>Нехай займається обличчям,<br>а не нагадуваннями.</em></p>
+  <div class="closing-sub">Care Assistant · Детальний кейс · Травень 2026 · Revive Clinic, Львів</div>
+</div>
+
+</body>
+</html>
